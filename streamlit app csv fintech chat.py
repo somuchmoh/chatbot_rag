@@ -10,12 +10,11 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 
-# get Groq api key by reading the first line of the text file groq.txt
+# Let users provide their own key securely in the UI (hidden input)
+api_key = st.text_input("Enter your Groq API key:", type="password")
 
-with open('groq.txt') as file:
-    api_key = str(file.readline())
-
-os.environ['GROQ_API_KEY'] = api_key
+if api_key:
+    os.environ['GROQ_API_KEY'] = api_key.strip()
 
 # Load CSV document
 loader = CSVLoader(r'fintechdf_categorized.csv', encoding="latin-1")
@@ -27,10 +26,6 @@ embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-
 
 # Store embeddings in vectordatabase
 vectorstore = FAISS.from_documents(doc, embeddings)
-
-llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
-)
 
 # Setting up the retrieval function using modern LCEL approach
 template = """Answer the question based only on the following context:
@@ -47,19 +42,27 @@ def format_docs(docs):
 
 retriever = vectorstore.as_retriever()
 
-chain = (
-    {"context": retriever | format_docs, "question": RunnablePassthrough()}
-    | prompt
-    | llm
-    | StrOutputParser()
-)
-
 st.title("Question Answering with Groq Chat")
 
 # User input for the query
 question = st.text_input("Enter your question:")
 
 if st.button("Submit") and question:
+    if not api_key:
+        st.error("Please enter your Groq API key to continue.")
+        st.stop()
+
+    llm = ChatGroq(
+        model="llama-3.3-70b-versatile",
+    )
+
+    chain = (
+        {"context": retriever | format_docs, "question": RunnablePassthrough()}
+        | prompt
+        | llm
+        | StrOutputParser()
+    )
+
     with st.spinner("Processing..."):
         result = chain.invoke(question)
     st.write("**Result:**")
