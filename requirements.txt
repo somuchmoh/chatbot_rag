@@ -1,0 +1,26 @@
+# Dependencies for the WHU fintech apps and notebooks
+
+# Core UI/data stack
+streamlit>=1.30.0
+pandas>=2.0.0
+
+# Visualization
+matplotlib>=3.7.0
+plotly>=5.18.0
+
+# Groq + LangChain
+groq>=0.4.0
+langchain>=0.1.0
+langchain-community>=0.0.20
+langchain-core>=0.1.0
+langchain-groq>=0.1.0
+langchain-huggingface>=0.1.0
+langchain-text-splitters>=0.2.0
+
+# Embeddings / vector search / document loading
+sentence-transformers>=2.2.0
+faiss-cpu>=1.7.4
+pypdf>=4.0.0
+
+# Notebook support
+nbformat>=5.9.0
